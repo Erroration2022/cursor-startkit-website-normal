@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #faf7f2;
-  --foreground: #1a1614;
+  --background: #f7f3ec;
+  --foreground: #1c1816;
   --card: #fffdf9;
   --muted: #6b5e56;
-  --accent: #8b2635;
-  --accent-light: #f3e4e6;
-  --gold: #b8954a;
-  --border: #e8dfd4;
+  --accent: #7a1f2e;
+  --accent-light: #f5e8ea;
+  --gold: #a67c3d;
+  --border: #e2d6c8;
+  --ink: #2a2420;
 }
 
 @theme inline {
@@ -20,6 +21,7 @@
   --color-accent-light: var(--accent-light);
   --color-gold: var(--gold);
   --color-border: var(--border);
+  --color-ink: var(--ink);
   --font-sans: var(--font-noto-sans);
   --font-serif: var(--font-noto-serif);
 }
@@ -31,5 +33,53 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 20%, white);
+  background: color-mix(in srgb, var(--accent) 18%, white);
+}
+
+.pattern-seigaiha {
+  background-color: var(--background);
+  background-image: radial-gradient(
+      circle at 100% 150%,
+      transparent 24%,
+      color-mix(in srgb, var(--border) 55%, transparent) 25%,
+      color-mix(in srgb, var(--border) 55%, transparent) 28%,
+      transparent 29%,
+      transparent 36%,
+      color-mix(in srgb, var(--border) 55%, transparent) 37%,
+      color-mix(in srgb, var(--border) 55%, transparent) 40%,
+      transparent 41%,
+      transparent
+    ),
+    radial-gradient(
+      circle at 0 150%,
+      transparent 24%,
+      color-mix(in srgb, var(--border) 55%, transparent) 25%,
+      color-mix(in srgb, var(--border) 55%, transparent) 28%,
+      transparent 29%,
+      transparent 36%,
+      color-mix(in srgb, var(--border) 55%, transparent) 37%,
+      color-mix(in srgb, var(--border) 55%, transparent) 40%,
+      transparent 41%,
+      transparent
+    );
+  background-size: 48px 24px;
+}
+
+.vertical-rule {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+.section-kanji {
+  font-family: var(--font-noto-serif), serif;
+  letter-spacing: 0.15em;
+}
+
+.card-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--ink) 8%, transparent);
 }
