@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { CartButton } from "@/components/cart/cart-button";
 import { site } from "@/lib/site";
 
 export function Header() {
@@ -24,9 +27,16 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <Link
+            href="/menu#order"
+            className="text-sm font-medium text-accent transition-colors hover:text-accent/80"
+          >
+            Order
+          </Link>
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
+          <CartButton />
           <Link
             href="/contact"
             className="hidden rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent-light sm:inline-block"
@@ -35,7 +45,7 @@ export function Header() {
           </Link>
           <a
             href={`tel:${site.phone.replace(/\D/g, "")}`}
-            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90"
+            className="hidden rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent/90 md:inline-block"
           >
             Reserve
           </a>
@@ -52,6 +62,12 @@ export function Header() {
             {item.label}
           </Link>
         ))}
+        <Link
+          href="/menu#order"
+          className="shrink-0 rounded-full bg-accent-light px-3 py-1.5 text-xs font-medium text-accent"
+        >
+          Order
+        </Link>
       </nav>
     </header>
   );

@@ -11,7 +11,7 @@ export function Hero() {
           alt="Warm wood sushi counter in a fictional Japanese restaurant"
           fill
           priority
-          className="object-cover"
+          className="object-cover animate-ken-burns"
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-linear-to-r from-ink/90 via-ink/75 to-ink/35" />
@@ -19,7 +19,7 @@ export function Hero() {
       </div>
 
       <div className="relative mx-auto grid min-h-[85vh] max-w-6xl items-center gap-10 px-6 py-24 lg:grid-cols-[1.2fr_0.8fr]">
-        <div>
+        <div className="animate-fade-in-up">
           <p className="text-sm font-medium tracking-[0.35em] text-gold uppercase">
             {site.nameJa} · Sample City
           </p>
@@ -33,10 +33,10 @@ export function Hero() {
           </p>
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
-              href="/menu"
-              className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent/90"
+              href="/menu#order"
+              className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent/90 hover:shadow-lg"
             >
-              Explore Menu
+              Order Online
             </Link>
             <Link
               href="/about"
@@ -47,7 +47,7 @@ export function Hero() {
           </div>
         </div>
 
-        <div className="hidden rounded-2xl border border-white/15 bg-white/10 p-8 backdrop-blur-md lg:block">
+        <div className="hidden animate-fade-in-up rounded-2xl border border-white/15 bg-white/10 p-8 backdrop-blur-md lg:block" style={{ animationDelay: "300ms" }}>
           <p className="section-kanji text-5xl text-gold">匠心</p>
           <p className="mt-4 text-sm leading-relaxed text-white/85">
             Shōshin — the artisan&apos;s heart. In Japanese dining culture, mastery
