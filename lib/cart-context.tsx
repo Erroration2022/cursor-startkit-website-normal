@@ -4,14 +4,15 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
 } from "react";
 import type { CartLineItem, MenuItem } from "@/lib/menu";
 import { calcOrderTotals } from "@/lib/menu";
 
 const STORAGE_KEY = "hanami-demo-cart";
+const EMPTY_CART: CartLineItem[] = [];
 
 type CartContextValue = {
   items: CartLineItem[];
@@ -33,65 +34,102 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-function loadStoredCart(): CartLineItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as CartLineItem[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+let cartListeners: Array<() => void> = [];
+let cachedRaw: string | null = null;
+let cachedSnapshot: CartLineItem[] = EMPTY_CART;
+
+function emitCartChange() {
+  cartListeners.forEach((listener) => listener());
+}
+
+function subscribeCart(listener: () => void) {
+  cartListeners = [...cartListeners, listener];
+  return () => {
+    cartListeners = cartListeners.filter((l) => l !== listener);
+  };
+}
+
+function getCartSnapshot(): CartLineItem[] {
+  if (typeof window === "undefined") return EMPTY_CART;
+
+  const raw = window.localStorage.getItem(STORAGE_KEY);
+
+  if (raw === cachedRaw) {
+    return cachedSnapshot;
   }
+
+  cachedRaw = raw;
+
+  if (!raw) {
+    cachedSnapshot = EMPTY_CART;
+    return cachedSnapshot;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as CartLineItem[];
+    cachedSnapshot = Array.isArray(parsed) ? parsed : EMPTY_CART;
+  } catch {
+    cachedSnapshot = EMPTY_CART;
+  }
+
+  return cachedSnapshot;
+}
+
+function writeStoredCart(items: CartLineItem[]) {
+  if (typeof window === "undefined") return;
+
+  const raw = JSON.stringify(items);
+  window.localStorage.setItem(STORAGE_KEY, raw);
+  cachedRaw = raw;
+  cachedSnapshot = items.length === 0 ? EMPTY_CART : items;
+  emitCartChange();
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartLineItem[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const items = useSyncExternalStore(
+    subscribeCart,
+    getCartSnapshot,
+    () => EMPTY_CART,
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [orderType, setOrderType] = useState<"pickup" | "delivery">("pickup");
 
-  useEffect(() => {
-    setItems(loadStoredCart());
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items, hydrated]);
-
   const addItem = useCallback((item: MenuItem, quantity = 1) => {
-    setItems((current) => {
-      const existing = current.find((line) => line.id === item.id);
-      if (existing) {
-        return current.map((line) =>
+    const current = getCartSnapshot();
+    const existing = current.find((line) => line.id === item.id);
+
+    const next = existing
+      ? current.map((line) =>
           line.id === item.id
             ? { ...line, quantity: line.quantity + quantity }
             : line,
-        );
-      }
-      return [...current, { ...item, quantity }];
-    });
+        )
+      : [...current, { ...item, quantity }];
+
+    writeStoredCart(next);
     setIsOpen(true);
   }, []);
 
   const removeItem = useCallback((id: string) => {
-    setItems((current) => current.filter((line) => line.id !== id));
+    writeStoredCart(getCartSnapshot().filter((line) => line.id !== id));
   }, []);
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    if (quantity < 1) {
-      setItems((current) => current.filter((line) => line.id !== id));
-      return;
-    }
-    setItems((current) =>
-      current.map((line) => (line.id === id ? { ...line, quantity } : line)),
-    );
+    const current = getCartSnapshot();
+    const next =
+      quantity < 1
+        ? current.filter((line) => line.id !== id)
+        : current.map((line) =>
+            line.id === id ? { ...line, quantity } : line,
+          );
+
+    writeStoredCart(next);
   }, []);
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(() => {
+    writeStoredCart([]);
+  }, []);
 
   const itemCount = useMemo(
     () => items.reduce((sum, line) => sum + line.quantity, 0),
